@@ -7,7 +7,6 @@ import json
 import os
 import shutil
 import subprocess
-import sys
 import uuid
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -98,11 +97,13 @@ def build(
     environment = os.environ.copy()
     environment.update(TELEMETRY_DB=str(database), DBT_SEND_ANONYMOUS_USAGE_STATS="false",
                        DBT_USE_COLORS="false", PYTHONIOENCODING="utf-8")
-    executable = Path(sys.executable).parent / ("dbt.exe" if os.name == "nt" else "dbt")
+    executable = shutil.which("dbt")
+    if executable is None:
+        raise RuntimeError("dbt executable not found on PATH")
     common = ["--project-dir", str(PROJECT / "dbt"), "--profiles-dir", str(PROJECT / "dbt"),
               "--target-path", str(artifacts), "--log-path", str(artifacts / "logs"),
               "--vars", json.dumps({"as_of": as_of, "complete_through": complete_through})]
-    command = [str(executable), "build", *common]
+    command = [executable, "build", *common]
     if full_refresh:
         command.append("--full-refresh")
     with (artifacts / "build.log").open("w", encoding="utf-8") as log:
@@ -126,7 +127,7 @@ def build(
                 connection.execute(f'drop table if exists analytics."{name}"')
     if generate_docs:
         with (artifacts / "docs.log").open("w", encoding="utf-8") as log:
-            subprocess.run([str(executable), "docs", "generate", "--no-compile", *common],
+            subprocess.run([executable, "docs", "generate", "--no-compile", *common],
                            env=environment, stdout=log, stderr=subprocess.STDOUT, timeout=900, check=True)
     with duckdb.connect(str(database)) as connection:
         receipt = dict(fingerprint=content_fingerprint(connection), as_of=as_of,
