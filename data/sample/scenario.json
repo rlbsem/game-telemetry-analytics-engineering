@@ -1,0 +1,24 @@
+{
+  "seed": 17,
+  "players_per_title": 160,
+  "titles": [
+    "atlas",
+    "echo"
+  ],
+  "activity_start": "2026-01-01",
+  "activity_end": "2026-01-21",
+  "as_of": "2026-01-23T00:00:00Z",
+  "complete_through": "2026-01-21",
+  "emitted_events": 27364,
+  "transport_lost_events": 285,
+  "delivered_rows_including_retries": 27336,
+  "sessions_generated": 1875,
+  "signals": {
+    "crashes": "Atlas 1.1.0 crash probability 14%; baseline and Echo 2.5%.",
+    "progression": "Atlas 1.1.0 M02: 4-7 deaths per reached attempt and 35% completion probability (other missions 90%).",
+    "instrumentation": "Atlas 1.1.0 omits heartbeats for 75% of player IDs; terminal counters remain valid.",
+    "delivery": "Atlas on receipt date Jan 16 loses events for player IDs divisible by 3; manifest remains complete.",
+    "retention": "Acquisition cohorts from Jan 11 have lower return probabilities; build association is not causal proof.",
+    "boundaries": "Every 53rd session loses start; every 47th loses terminal; every 37th terminal delayed 1-2 days."
+  }
+}

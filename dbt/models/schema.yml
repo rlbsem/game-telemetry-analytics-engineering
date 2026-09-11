@@ -1,0 +1,247 @@
+version: 2
+models:
+  - name: stg_events
+    description: One validated raw event, with stable title-scoped composite keys. No temporal filtering.
+    columns:
+      - name: event_key
+        description: Hash of length-prefixed title_id and event_id.
+        data_tests: [not_null, unique]
+  - name: fct_events
+    description: One event per title and event ID; incremental on monotone ingestion sequence, independent of event age.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, event_id]
+    columns:
+      - name: event_key
+        data_tests: [not_null, unique]
+      - name: session_key
+        data_tests: [not_null]
+      - name: player_key
+        data_tests: [not_null]
+      - name: ingest_seq
+        description: Transactionally allocated arrival watermark; always increasing for newly accepted events.
+        data_tests: [not_null, unique]
+      - name: title_id
+        data_tests:
+          - not_null
+          - relationships: {to: "ref('dim_title')", field: title_id}
+      - name: build_key
+        data_tests:
+          - not_null
+          - relationships: {to: "ref('dim_build')", field: build_key}
+      - name: player_id
+        data_tests: [not_null]
+      - name: session_id
+        data_tests: [not_null]
+      - name: event_ts
+        description: UTC occurrence timestamp. Defines DAU date.
+        data_tests: [not_null]
+      - name: received_at
+        description: Trusted UTC receipt timestamp. Defines delivery-monitoring date.
+        data_tests: [not_null]
+      - name: event_sequence
+        description: Strictly increasing client sequence within a session; gaps allowed.
+        data_tests: [not_null]
+      - name: event_name
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [session_start, session_end, heartbeat, mission_start, checkpoint_reached, player_death, mission_complete, crash, error]
+      - name: schema_version
+        data_tests:
+          - not_null
+          - accepted_values: {values: [1, 2], quote: false}
+      - name: platform
+        data_tests: [not_null]
+      - name: country_code
+        data_tests: [not_null]
+  - name: dim_title
+    description: One synthetic title; named studio liaison owns instrumentation and game-domain semantics.
+    columns:
+      - name: title_id
+        data_tests: [not_null, unique]
+  - name: dim_build
+    description: One title/build pair, with schema and instrumentation revision fixed by release metadata.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, build_id]
+    columns:
+      - name: build_key
+        data_tests: [not_null, unique]
+      - name: title_id
+        data_tests:
+          - relationships: {to: "ref('dim_title')", field: title_id}
+      - name: build_id
+        data_tests: [not_null]
+      - name: released_at
+        data_tests: [not_null]
+  - name: dim_player
+    description: One title/player identity. First observed event defines cohort; recomputed when earlier telemetry arrives.
+    columns:
+      - name: player_key
+        data_tests: [not_null, unique]
+      - name: cohort_date
+        data_tests: [not_null]
+      - name: cohort_build_key
+        data_tests:
+          - relationships: {to: "ref('dim_build')", field: build_key}
+  - name: fct_sessions
+    description: One title/client-session ID. Recomputes entire affected session on every late arrival; never infers inactivity boundaries.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, session_id]
+    columns:
+      - name: session_key
+        data_tests: [not_null, unique]
+      - name: player_key
+        data_tests:
+          - not_null
+          - relationships: {to: "ref('dim_player')", field: player_key}
+      - name: build_key
+        data_tests:
+          - relationships: {to: "ref('dim_build')", field: build_key}
+      - name: session_start_at
+        description: Actual session_start time, null for missing starts.
+      - name: session_terminal_at
+        description: Actual session_end or crash time, null for unterminated sessions.
+      - name: session_date
+        description: UTC start date; first observed date only for explicitly partial sessions lacking a start.
+      - name: is_complete
+        description: Exactly one start and one terminal (session_end or crash) observed.
+        data_tests: [not_null]
+      - name: active_seconds
+        description: Maximum cumulative active counter; lower bound when instrumentation is partial.
+        data_tests: [not_null]
+      - name: session_duration_seconds
+        description: Wall-clock terminal minus start, only when complete. Never used as active playtime.
+      - name: source_ingest_seq
+        description: Largest ingestion sequence contributing to this session; incremental impact watermark.
+        data_tests: [not_null]
+  - name: fct_attempts
+    description: One title/session/attempt. Retries and repeated mission visits have distinct client attempt IDs.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, session_id, attempt_id]
+    columns:
+      - name: attempt_key
+        data_tests: [not_null, unique]
+      - name: session_key
+        data_tests:
+          - relationships: {to: "ref('fct_sessions')", field: session_key}
+      - name: mission_id
+        data_tests: [not_null]
+      - name: started_at
+        description: Actual mission_start timestamp; null for pending orphan telemetry inside the 48-hour lateness grace.
+      - name: is_pending
+        description: Missing mission_start. Excluded from completion metrics; blocks publication after 48 hours of event-time grace.
+  - name: int_event_activity
+    description: One event with nonnegative active-counter increment assigned to the UTC day of the reporting event.
+  - name: fct_player_day
+    description: One title/player/UTC occurrence date with at least one event. Source of DAU and exact-day retention.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, player_id, activity_date]
+    columns:
+      - name: player_day_key
+        data_tests: [not_null, unique]
+      - name: player_key
+        data_tests:
+          - relationships: {to: "ref('dim_player')", field: player_key}
+      - name: activity_date
+        data_tests: [not_null]
+  - name: mart_daily_title
+    description: One title/calendar day from launch through the last full UTC date before as_of, including zero-activity dates.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, activity_date]
+    columns:
+      - name: crash_rate
+        description: Distinct crashed observed sessions / all observed sessions, grouped by session start date or partial first-seen date.
+        data_tests:
+          - between_values: {minimum: 0, maximum: 1}
+  - name: mart_build_health
+    description: One title/build, with pooled session denominators and partial-telemetry counts. Descriptive release comparison, not causal attribution.
+    columns:
+      - name: build_key
+        data_tests: [not_null, unique]
+      - name: crash_rate
+        data_tests:
+          - between_values: {minimum: 0, maximum: 1}
+  - name: mart_progression
+    description: One title/build/mission, including unplayed missions. Attempt completion is separate from unique-player completion.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, build_id, mission_id]
+    columns:
+      - name: completion_rate
+        data_tests:
+          - between_values: {minimum: 0, maximum: 1}
+      - name: unfinished_rate
+        description: Started attempts without observed completion / started attempts. Includes in-progress and transport loss; not causal player churn.
+        data_tests:
+          - between_values: {minimum: 0, maximum: 1}
+  - name: mart_retention
+    description: One title/first-observed cohort date/cohort build. Exact D1 and D7; immature numerators and rates stay null.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, cohort_date, cohort_build_id]
+    columns:
+      - name: d1_retention
+        data_tests:
+          - between_values: {minimum: 0, maximum: 1}
+      - name: d7_retention
+        data_tests:
+          - between_values: {minimum: 0, maximum: 1}
+  - name: mart_launch_health
+    description: One receipt date/title from independent expectations or delivered events; zero-delivery days remain visible.
+    data_tests:
+      - unique_combination:
+          columns: [receipt_date, title_id]
+    columns:
+      - name: receipt_date
+        data_tests: [not_null]
+      - name: title_id
+        data_tests:
+          - not_null
+          - relationships: {to: "ref('dim_title')", field: title_id}
+      - name: expected_events
+        description: Pre-loss synthetic server manifest. Null means no independent expectation exists.
+      - name: event_delivery_ratio
+        description: Accepted deduplicated events / independently expected events by trusted receipt date; zero expected gives null.
+
+seeds:
+  - name: titles
+    description: Synthetic game catalog; not a real studio or platform catalog.
+    columns:
+      - name: title_id
+        data_tests: [not_null, unique]
+  - name: builds
+    description: Release contract per synthetic title/build. Semantic changes require a reviewed revision.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, build_id]
+  - name: missions
+    description: Title-scoped mission catalog; mission_order is display order, not an assumption that all games are linear.
+    data_tests:
+      - unique_combination:
+          columns: [title_id, mission_id]
+  - name: calendar
+    description: Finite sample calendar. Extend for new event dates; coverage gate fails otherwise.
+    columns:
+      - name: date_day
+        data_tests: [not_null, unique]
+
+exposures:
+  - name: launch_review
+    label: Synthetic title launch review
+    type: analysis
+    maturity: medium
+    owner:
+      name: Portfolio analytics engineering
+    description: Generated evidence report and launch-monitor alerts consumed by an example studio launch review.
+    depends_on:
+      - ref('mart_launch_health')
+      - ref('mart_build_health')
+      - ref('mart_progression')
+      - ref('mart_daily_title')
+      - ref('mart_retention')

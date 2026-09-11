@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/synthetic-game-telemetry/event.schema.json",
+  "title": "Synthetic game telemetry envelope, versions 1 and 2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "title_id", "player_id", "session_id", "build_id", "platform", "country_code", "event_name", "schema_version", "event_ts", "received_at", "event_sequence", "metadata"],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"}
+  },
+  "properties": {
+    "event_id": {"$ref": "#/$defs/id"},
+    "title_id": {"$ref": "#/$defs/id"},
+    "player_id": {"$ref": "#/$defs/id"},
+    "session_id": {"$ref": "#/$defs/id"},
+    "build_id": {"$ref": "#/$defs/id"},
+    "platform": {"enum": ["console_current", "pc"]},
+    "country_code": {"type": "string", "pattern": "^[A-Z]{2}$"},
+    "event_name": {"enum": ["session_start", "session_end", "heartbeat", "mission_start", "checkpoint_reached", "player_death", "mission_complete", "crash", "error"]},
+    "schema_version": {"type": "integer", "enum": [1, 2]},
+    "event_ts": {"type": "string", "format": "date-time"},
+    "received_at": {"type": "string", "format": "date-time"},
+    "event_sequence": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+    "mission_id": {"$ref": "#/$defs/id"},
+    "attempt_id": {"$ref": "#/$defs/id"},
+    "checkpoint_id": {"$ref": "#/$defs/id"},
+    "play_time_ms": {"type": "integer", "minimum": 0, "maximum": 86400000},
+    "active_seconds": {"type": "number", "minimum": 0, "maximum": 86400},
+    "error_code": {"$ref": "#/$defs/id"},
+    "metadata": {
+      "type": "object", "maxProperties": 16,
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]{0,63}$"},
+      "additionalProperties": {"type": ["string", "number", "boolean", "null"]}
+    }
+  },
+  "allOf": [
+    {"if": {"properties": {"schema_version": {"const": 1}}}, "then": {"not": {"required": ["active_seconds"]}}},
+    {"if": {"properties": {"schema_version": {"const": 2}}}, "then": {"not": {"required": ["play_time_ms"]}}},
+    {"if": {"properties": {"event_name": {"enum": ["heartbeat", "session_end", "crash"]}, "schema_version": {"const": 1}}}, "then": {"required": ["play_time_ms"]}},
+    {"if": {"properties": {"event_name": {"enum": ["heartbeat", "session_end", "crash"]}, "schema_version": {"const": 2}}}, "then": {"required": ["active_seconds"]}},
+    {"if": {"properties": {"event_name": {"enum": ["mission_start", "mission_complete", "checkpoint_reached", "player_death"]}}}, "then": {"required": ["mission_id", "attempt_id"]}},
+    {"if": {"properties": {"event_name": {"const": "checkpoint_reached"}}}, "then": {"required": ["checkpoint_id"]}},
+    {"if": {"properties": {"event_name": {"enum": ["crash", "error"]}}}, "then": {"required": ["error_code"]}}
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "clean_replay_equal": true,
+  "dbt_models": 14,
+  "dbt_tests": 95,
+  "duckdb": "1.3.2",
+  "elapsed_seconds": 34.06,
+  "expected_alerts": [
+    ["crash_rate_regression", "atlas"],
+    ["delivery_volume_loss", "atlas"],
+    ["heartbeat_instrumentation_loss", "atlas"],
+    ["progression_bottleneck", "atlas"]
+  ],
+  "limits": "Executed Python/dbt/DuckDB locally; this does not assert AWS deployment or an Airflow scheduler run.",
+  "mart_sha256": {
+    "mart_build_health": "b3794f7c96701ff8ec679b507d67e18456dfb46d8d9c06b2341f4a75e7af341d",
+    "mart_daily_title": "27383e537a5ac7de50e074636f0bc1cbc4a666979d59762ea72d2e581bf98f59",
+    "mart_launch_health": "62af372f69cb06da4b76707cd48f56d98bc6a4e5b6d6d31a53fa1fbead2eaced",
+    "mart_progression": "2f4b974bc9d136108b9dd1041c605b58e14e99af774bd83a27be1f48dfa34473",
+    "mart_retention": "5345316206be6cdb597ef366a32171f4086f540e439d820aef26b02444b467ce"
+  },
+  "operating_system": "Windows",
+  "python": "3.12.14",
+  "status": "passed",
+  "summary": {
+    "attempts": 4619,
+    "duplicate_deliveries": 257,
+    "events": 27079,
+    "loaded_batches": 22,
+    "players": 320,
+    "rejected_batches": 0,
+    "sessions": 1857
+  }
+}

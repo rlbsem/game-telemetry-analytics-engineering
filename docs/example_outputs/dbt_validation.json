@@ -1,0 +1,9 @@
+{
+  "as_of": "2026-01-23T00:00:00Z",
+  "complete_through": "2026-01-21",
+  "dbt_results_sha256": "c5b9d0e2585862fb62265bfee41262575b4c7068198633a49ce0ee46d1e8139d",
+  "fingerprint": "f7fa71e6d2de768afdd27ed532536ed4d55574092d3ab68518888c1fb6f2bb0f",
+  "model_count": 14,
+  "test_count": 95,
+  "validated_at": "2026-09-11T21:17:22.605233+00:00"
+}

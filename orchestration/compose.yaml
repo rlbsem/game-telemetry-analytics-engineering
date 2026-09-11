@@ -1,0 +1,74 @@
+name: synthetic-game-telemetry
+
+x-airflow: &airflow
+  build:
+    context: ..
+    dockerfile: orchestration/Dockerfile
+  image: synthetic-game-telemetry-airflow:2.10.5
+  environment: &environment
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_WEBSERVER_SECRET:-local-demo-only-secret}
+    TELEMETRY_LANDING: /opt/airflow/telemetry/landing
+    TELEMETRY_STATE: /opt/airflow/telemetry/state
+  volumes:
+    - telemetry-data:/opt/airflow/telemetry
+    - airflow-logs:/opt/airflow/logs
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16.8-bookworm
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  init:
+    <<: *airflow
+    command: version
+    environment:
+      <<: *environment
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: demo
+      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:-local-demo-change-me}
+
+  scheduler:
+    <<: *airflow
+    command: scheduler
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  webserver:
+    <<: *airflow
+    command: webserver
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  cli:
+    <<: *airflow
+    profiles: ["tools"]
+    command: version
+
+volumes:
+  telemetry-data:
+  airflow-logs:
+  airflow-db:

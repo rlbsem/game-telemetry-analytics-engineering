@@ -1,0 +1,24 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+.local/
+work/
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+*.duckdb
+*.duckdb.wal
+.env
+.DS_Store
+
+# Deterministic generated telemetry; keep the public repository lean.
+data/sample/*.jsonl
+data/sample/manifest.json

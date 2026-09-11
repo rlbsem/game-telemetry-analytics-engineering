@@ -1,0 +1,34 @@
+{
+  "alerts": [
+    {"action":"Gameplay/platform engineer: stratify platform and error_code, inspect release change; association is not causal proof.","baseline_rate":0.020289855072463767,"build_id":"1.1.0","code":"crash_rate_regression","observed_rate":0.12116040955631399,"sessions":586,"severity":"review","threshold_absolute_increase":0.03,"title_id":"atlas"},
+    {"action":"Mission designer + analyst: inspect deaths and open-attempt share; unfinished attempts are not proven abandonment.","build_id":"1.1.0","code":"progression_bottleneck","completion_rate":0.35947712418300654,"deaths_per_attempt":5.477124183006536,"mission_id":"M02","severity":"review","started_attempts":459,"title_id":"atlas"},
+    {"action":"Ingestion owner: compare sealed collector manifest and receipt partitions; recover missing objects before trusting volume trends.","code":"delivery_volume_loss","delivery_ratio":0.6401515151515151,"expected_events":792,"receipt_date":"2026-01-16","received_events":507,"severity":"review","threshold_ratio":0.95,"title_id":"atlas"},
+    {"action":"Client telemetry owner: compare instrumentation revisions and emission by build; terminal counters preserve totals but interval coverage degrades.","baseline_per_session":2.7246376811594204,"build_id":"1.1.0","code":"heartbeat_instrumentation_loss","observed_per_session":0.5119453924914675,"severity":"review","threshold_ratio":0.5,"title_id":"atlas"},
+    {"action":"Game analyst: inspect first-observed cohort mix and acquisition windows; a cohort-build association does not establish release causality.","baseline_d1_rate":0.7545454545454545,"build_id":"1.1.0","code":"cohort_retention_shift","eligible_players":50,"observed_d1_rate":0.48,"severity":"review","threshold_absolute_drop":0.15,"title_id":"echo"}
+  ],
+  "as_of":"2026-01-23T00:00:00Z",
+  "build_health":[
+    {"active_seconds":"342048.000","avg_session_active_minutes":16.585975609756098,"avg_session_wall_minutes":20.73318089430894,"build_id":"1.0.0","build_key":"3074762d1c4bd4700797a7dc95c0024b","complete_sessions":328,"crash_rate":0.020289855072463767,"crashed_sessions":7,"deaths":950,"errors":14,"event_count":5307,"instrumentation_revision":"rev1","partial_sessions":17,"players":110,"released_at":"2026-01-01 00:00:00","schema_version":1,"sessions":345,"title_id":"atlas"},
+    {"active_seconds":"488976.000","avg_session_active_minutes":14.07575221238938,"avg_session_wall_minutes":17.595309734513272,"build_id":"1.1.0","build_key":"be9abe2b07acc05126271b4fb88572b7","complete_sessions":565,"crash_rate":0.12116040955631399,"crashed_sessions":71,"deaths":3287,"errors":21,"event_count":7951,"instrumentation_revision":"rev2","partial_sessions":21,"players":159,"released_at":"2026-01-11 00:00:00","schema_version":2,"sessions":586,"title_id":"atlas"},
+    {"active_seconds":"303072.000","avg_session_active_minutes":15.835830618892508,"avg_session_wall_minutes":19.795331161780673,"build_id":"1.0.0","build_key":"fca99afd378734d7ce7352a87bf71b0e","complete_sessions":307,"crash_rate":0.02830188679245283,"crashed_sessions":9,"deaths":818,"errors":10,"event_count":4705,"instrumentation_revision":"rev1","partial_sessions":11,"players":110,"released_at":"2026-01-01 00:00:00","schema_version":1,"sessions":318,"title_id":"echo"},
+    {"active_seconds":"589464.000","avg_session_active_minutes":16.212027491408936,"avg_session_wall_minutes":20.265836197021763,"build_id":"1.1.0","build_key":"b06a2b5b305c8fd65178ef90e9b0ddb8","complete_sessions":582,"crash_rate":0.02138157894736842,"crashed_sessions":13,"deaths":1540,"errors":30,"event_count":9116,"instrumentation_revision":"rev2","partial_sessions":26,"players":160,"released_at":"2026-01-11 00:00:00","schema_version":2,"sessions":608,"title_id":"echo"}
+  ],
+  "complete_through":"2026-01-21",
+  "event_mix":[
+    {"build_id":"1.0.0","heartbeats_per_session":2.7246376811594204,"sessions":345,"title_id":"atlas"},
+    {"build_id":"1.1.0","heartbeats_per_session":0.5119453924914675,"sessions":586,"title_id":"atlas"},
+    {"build_id":"1.0.0","heartbeats_per_session":2.6352201257861636,"sessions":318,"title_id":"echo"},
+    {"build_id":"1.1.0","heartbeats_per_session":2.682565789473684,"sessions":608,"title_id":"echo"}
+  ],
+  "interpretation":"Threshold alerts are triage, not significance tests or causal estimates. Delivery gaps and observed-only populations can bias metrics. CSVs contain denominators; docs/metrics.md defines semantics.",
+  "retention_summary":[
+    {"cohort_build_id":"1.0.0","d1_eligible":110,"d1_rate":0.7454545454545455,"d1_returned":82,"d7_eligible":110,"d7_rate":0.39090909090909093,"d7_returned":43,"has_delivery_gap":true,"title_id":"atlas"},
+    {"cohort_build_id":"1.1.0","d1_eligible":50,"d1_rate":0.42,"d1_returned":21,"d7_eligible":40,"d7_rate":0.175,"d7_returned":7,"has_delivery_gap":true,"title_id":"atlas"},
+    {"cohort_build_id":"1.0.0","d1_eligible":110,"d1_rate":0.7545454545454545,"d1_returned":83,"d7_eligible":110,"d7_rate":0.4818181818181818,"d7_returned":53,"has_delivery_gap":false,"title_id":"echo"},
+    {"cohort_build_id":"1.1.0","d1_eligible":50,"d1_rate":0.48,"d1_returned":24,"d7_eligible":40,"d7_rate":0.225,"d7_returned":9,"has_delivery_gap":false,"title_id":"echo"}
+  ],
+  "schema_coverage":[{"build_id":"1.0.0","events":5307,"schema_version":1,"title_id":"atlas"},{"build_id":"1.1.0","events":7951,"schema_version":2,"title_id":"atlas"},{"build_id":"1.0.0","events":4705,"schema_version":1,"title_id":"echo"},{"build_id":"1.1.0","events":9116,"schema_version":2,"title_id":"echo"}],
+  "summary":{"attempts":4619,"duplicate_deliveries":257,"events":27079,"loaded_batches":22,"players":320,"rejected_batches":0,"sessions":1857},
+  "synthetic":true,
+  "validation":{"as_of":"2026-01-23T00:00:00Z","complete_through":"2026-01-21","dbt_results_sha256":"c5b9d0e2585862fb62265bfee41262575b4c7068198633a49ce0ee46d1e8139d","fingerprint":"f7fa71e6d2de768afdd27ed532536ed4d55574092d3ab68518888c1fb6f2bb0f","model_count":14,"test_count":95,"validated_at":"2026-09-11T21:17:22.605233+00:00"}
+}

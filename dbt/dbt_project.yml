@@ -1,0 +1,32 @@
+name: game_telemetry
+version: '1.0.0'
+config-version: 2
+profile: game_telemetry
+model-paths: [models]
+seed-paths: [seeds]
+test-paths: [tests]
+macro-paths: [macros]
+target-path: target
+clean-targets: [target, dbt_packages, logs]
+vars:
+  as_of: '2026-01-23T00:00:00'
+  complete_through: '2026-01-21'
+models:
+  game_telemetry:
+    +persist_docs: {relation: true, columns: true}
+    +materialized: table
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+seeds:
+  game_telemetry:
+    +quote_columns: false
+    titles:
+      +column_types: {title_id: varchar, launch_date: date}
+    builds:
+      +column_types: {title_id: varchar, build_id: varchar, released_at: timestamp}
+    missions:
+      +column_types: {title_id: varchar, mission_id: varchar}
+    calendar:
+      +column_types: {date_day: date}

@@ -1,0 +1,10 @@
+game_telemetry:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('TELEMETRY_DB') }}"
+      schema: analytics
+      threads: 4
+      settings:
+        TimeZone: UTC

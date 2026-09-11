@@ -1,0 +1,11 @@
+.git
+.venv
+.local
+work
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/*.egg-info
+dbt/target
+dbt/logs
+data/sample
