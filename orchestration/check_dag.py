@@ -1,7 +1,8 @@
 """Run with the pinned Airflow Python on Linux, independent of telemetry deps."""
 
-from airflow.models import DagBag
 from pathlib import Path
+
+from airflow.models import DagBag
 
 
 def main() -> None:
