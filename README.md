@@ -8,7 +8,7 @@ All data is synthetic. This independent project is not affiliated with Sony Inte
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"background":"#10101D","primaryColor":"#2A2A3D","primaryTextColor":"#F0F0FF","primaryBorderColor":"#7C7CAF","lineColor":"#B8B8FF","textColor":"#F0F0FF","secondaryColor":"#181825","tertiaryColor":"#2E2E45","fontFamily":"IBM Plex Sans, Arial, sans-serif","fontSize":"15px","edgeLabelBackground":"#10101D"}}}%%
-flowchart LR
+flowchart TB
     A[Synthetic game clients] --> B[Sealed receipt-day files]
     B --> C[Contract validation + batch ledger]
     C --> D[Raw DuckDB events]
