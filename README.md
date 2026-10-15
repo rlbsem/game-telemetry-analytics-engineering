@@ -7,7 +7,8 @@ A runnable analytics system for two fictional game launches. It turns imperfect 
 All data is synthetic. This independent project is not affiliated with Sony Interactive Entertainment or PlayStation, uses no proprietary telemetry, and makes no assumptions about their internal architecture.
 
 ```mermaid
-flowchart LR
+%%{init: {"theme":"base","themeVariables":{"background":"#10101D","primaryColor":"#2A2A3D","primaryTextColor":"#F0F0FF","primaryBorderColor":"#7C7CAF","lineColor":"#B8B8FF","textColor":"#F0F0FF","secondaryColor":"#181825","tertiaryColor":"#2E2E45","fontFamily":"IBM Plex Sans, Arial, sans-serif","fontSize":"15px","edgeLabelBackground":"#10101D"}}}%%
+flowchart TB
     A[Synthetic game clients] --> B[Sealed receipt-day files]
     B --> C[Contract validation + batch ledger]
     C --> D[Raw DuckDB events]
@@ -19,6 +20,15 @@ flowchart LR
     J[Airflow: interval, retries, quality gates] -.-> C
     J -.-> H
     K[Independent delivery manifest] --> H
+
+    classDef source fill:#181825,stroke:#7C7CAF,color:#F0F0FF,stroke-width:1.4px
+    classDef model fill:#2A2A3D,stroke:#B8B8FF,color:#F0F0FF,stroke-width:1.6px
+    classDef verified fill:#2E2E45,stroke:#81C5B0,color:#F0F0FF,stroke-width:2px
+    classDef orchestration fill:#2E2E45,stroke:#7C7CAF,color:#F0F0FF,stroke-width:1.5px,stroke-dasharray:5 4
+    class A,B,K source
+    class C,D,E,F,G model
+    class H,I verified
+    class J orchestration
 ```
 
 **Start with the evidence:** [generated launch report](docs/example_outputs/report.md), [metric definitions](docs/metrics.md), [validation and known limits](docs/validation.md).
